@@ -1,332 +1,470 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import logo from "@/assets/logo.png";
-import { Menu, X, Shield, Zap, Clock, Phone, Heart, Truck, DollarSign, AlertTriangle, MapPin, TrendingUp, Check, Star, ArrowRight, ChevronDown, Eye, Activity, Bell, Settings, Wifi, Gauge, Fuel } from "lucide-react";
+import { Shield, Zap, Clock, Phone, Heart, Truck, DollarSign, AlertTriangle, MapPin, TrendingUp, Check, Star, ArrowRight, ChevronDown, Eye, Activity, Bell, Settings, Wifi, Gauge, Fuel, Star as StarIcon, Users, Award, Target } from "lucide-react";
 
 const WHATSAPP_URL = "https://wa.me/5598985992136?text=Ol%C3%A1%2C%20vim%20pelo%20site%20e%20tenho%20interesse%20no%20plano%20da%20TopyPro.";
 
-const NeonText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <motion.span
-    className={className}
-    animate={{ textShadow: ["0 0 10px #10b981, 0 0 20px #10b981", "0 0 20px #10b981, 0 0 40px #10b981", "0 0 10px #10b981, 0 0 20px #10b981"] }}
-    transition={{ duration: 2, repeat: Infinity }}
-  >
-    {children}
-  </motion.span>
-);
-
-const GlassCard = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden ${className}`}>
-    {children}
-  </div>
-);
-
-const PulseRing = () => (
+const HolographicBadge = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
   <motion.div
-    className="absolute inset-0 border-2 border-emerald-500/50 rounded-full"
-    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-    transition={{ duration: 3, repeat: Infinity }}
-  />
-);
-
-const FloatingIcon = ({ icon: Icon, color = "#10b981" }: { icon: any; color?: string }) => (
-  <motion.div
-    className="absolute"
-    animate={{ y: [0, -20, 0], rotate: [0, 5, 0] }}
-    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+    className={`relative ${className}`}
+    whileHover={{ scale: 1.05 }}
   >
-    <div className="w-16 h-16 rounded-2xl bg-black/50 backdrop-blur flex items-center justify-center border border-white/10">
-      <Icon className="w-8 h-8" style={{ color }} />
+    <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-cyan-500 to-purple-500 rounded-full blur opacity-50" />
+    <div className="relative px-4 py-2 rounded-full bg-black border border-emerald-500/50">
+      {children}
     </div>
   </motion.div>
 );
 
-const AnimatedNumber = ({ target, duration = 2000 }: { target: number; duration?: number }) => {
+const CyberButton = ({ children, href, variant = "primary" }: { children: React.ReactNode; href: string; variant?: "primary" | "secondary" | "outline" }) => {
+  const baseClass = "relative px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all";
+  const variants = {
+    primary: "bg-gradient-to-r from-emerald-500 to-cyan-500 text-black hover:shadow-[0_0_40px_rgba(16,185,129,0.5)]",
+    secondary: "bg-gradient-to-r from-amber-500 to-orange-500 text-black hover:shadow-[0_0_40px_rgba(245,158,11,0.5)]",
+    outline: "border-2 border-emerald-500/50 text-emerald-400 hover:bg-emerald-500/10"
+  };
+
+  return (
+    <motion.a
+      href={href}
+      target="_blank"
+      className={`${baseClass} ${variants[variant]}`}
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.95 }}
+    >
+      <motion.span
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        initial={{ x: "-100%" }}
+        whileHover={{ x: "200%" }}
+        transition={{ duration: 0.6 }}
+      />
+      <span className="relative z-10 flex items-center gap-2">
+        {children}
+      </span>
+    </motion.a>
+  );
+};
+
+const GlitchText = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => {
+  const [isGlitching, setIsGlitching] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Math.random() > 0.95) setIsGlitching(true);
+      else setIsGlitching(false);
+    }, 100);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <motion.span
+      className={`relative inline-block ${className}`}
+      animate={isGlitching ? { x: [0, -3, 3, 0], skewX: [0, -2, 2, 0] } : {}}
+    >
+      <span className="absolute inset-0 text-cyan-400 -translate-x-1 -translate-y-1 opacity-70">{children}</span>
+      <span className="absolute inset-0 text-pink-400 translate-x-1 translate-y-1 opacity-70">{children}</span>
+      <span className="relative">{children}</span>
+    </motion.span>
+  );
+};
+
+const PulseIndicator = ({ color = "#10b981" }: { color?: string }) => (
+  <motion.div
+    className="w-3 h-3 rounded-full"
+    style={{ backgroundColor: color }}
+    animate={{ scale: [1, 1.5, 1], opacity: [1, 0.5, 1] }}
+    transition={{ duration: 1.5, repeat: Infinity }}
+  />
+);
+
+const NeonCard = ({ children, className = "", glowColor = "#10b981" }: { children: React.ReactNode; className?: string; glowColor?: string }) => (
+  <motion.div
+    className={`relative group ${className}`}
+    whileHover={{ y: -5 }}
+  >
+    <div
+      className="absolute -inset-px rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+      style={{
+        background: `linear-gradient(135deg, ${glowColor}20, transparent, ${glowColor}20)`,
+        filter: "blur(20px)"
+      }}
+    />
+    <div className="relative bg-black/60 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden">
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-current to-transparent" style={{ color: glowColor }} />
+      {children}
+    </div>
+  </motion.div>
+);
+
+const AnimatedCounter = ({ target, suffix = "" }: { target: number; suffix?: string }) => {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    let start = 0;
-    const end = target;
-    const increment = end / (duration / 16);
+    const duration = 2000;
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
     const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
+      current += increment;
+      if (current >= target) {
+        setCount(target);
         clearInterval(timer);
       } else {
-        setCount(Math.floor(start));
+        setCount(Math.floor(current));
       }
-    }, 16);
+    }, duration / steps);
     return () => clearInterval(timer);
-  }, [target, duration]);
+  }, [target]);
 
-  return <span>{count.toLocaleString()}</span>;
+  return <span>{count.toLocaleString()}{suffix}</span>;
 };
 
-const ProgressBar = ({ value, color = "#10b981" }: { value: number; color?: string }) => (
-  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-    <motion.div
-      className="h-full rounded-full"
-      style={{ backgroundColor: color }}
-      initial={{ width: 0 }}
-      animate={{ width: `${value}%` }}
-      transition={{ duration: 1.5, ease: "easeOut" }}
-    />
-  </div>
-);
+const MatrixRain = () => {
+  const canvasRef = useState(null);
+
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.1;";
+    document.body.appendChild(canvas);
+    const ctx = canvas.getContext("2d");
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const chars = "TOPYPRO01アイウエオカキクケコ";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    const draw = () => {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#10b981";
+      ctx.font = `${fontSize}px monospace`;
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
+      }
+    };
+
+    const interval = setInterval(draw, 50);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("resize", resize);
+      document.body.removeChild(canvas);
+    };
+  }, []);
+
+  return null;
+};
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-black/90 backdrop-blur-2xl border-b border-emerald-500/20">
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <motion.div
-                className="absolute inset-0 bg-emerald-500/30 rounded-xl blur-lg"
-                animate={{ opacity: [0.3, 0.6, 0.3] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-              <img src={logo} alt="TopyPro" className="relative h-12 w-12" />
-            </div>
-            <div>
-              <span className="text-xl font-black tracking-tight">TOPY<span className="text-emerald-400">PRO</span></span>
-              <p className="text-[10px] text-gray-500 tracking-widest">PROTEÇÃO VEICULAR</p>
-            </div>
-          </div>
+    <>
+      <MatrixRain />
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-700 ${
+        scrolled ? "bg-black/95 backdrop-blur-2xl border-b border-emerald-500/20 shadow-[0_0_50px_rgba(16,185,129,0.1)]" : "bg-transparent"
+      }`}>
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <motion.div
+              className="flex items-center gap-3"
+              whileHover={{ scale: 1.05 }}
+            >
+              <div className="relative">
+                <motion.div
+                  className="absolute -inset-2 bg-emerald-500/30 rounded-xl blur-lg"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <img src={logo} alt="TopyPro" className="relative h-12 w-12" />
+              </div>
+              <div>
+                <span className="text-2xl font-black tracking-tight">
+                  <span className="text-white">TOPY</span>
+                  <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">PRO</span>
+                </span>
+                <p className="text-[10px] text-gray-500 tracking-[0.3em]">PROTEÇÃO VEICULAR</p>
+              </div>
+            </motion.div>
 
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#home" className="text-sm text-gray-400 hover:text-white transition-colors">Início</a>
-            <a href="#sistema" className="text-sm text-gray-400 hover:text-white transition-colors">Sistema</a>
-            <a href="#cobertura" className="text-sm text-gray-400 hover:text-white transition-colors">Cobertura</a>
-            <a href={WHATSAPP_URL} target="_blank" className="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold rounded-full hover:scale-105 transition-transform">
-              WhatsApp
-            </a>
-          </div>
-
-          <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white">
-            {menuOpen ? <X size={28} /> : <Menu size={28} />}
-          </button>
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="md:hidden bg-black/95 border-t border-white/10"
-          >
-            <div className="p-6 flex flex-col gap-4">
-              <a href="#home" className="text-gray-400 py-2">Início</a>
-              <a href="#sistema" className="text-gray-400 py-2">Sistema</a>
-              <a href="#cobertura" className="text-gray-400 py-2">Cobertura</a>
-              <a href={WHATSAPP_URL} target="_blank" className="px-6 py-3 bg-emerald-500 text-black font-bold rounded-full text-center">
+            <div className="hidden md:flex items-center gap-10">
+              {[
+                { href: "#home", label: "Início" },
+                { href: "#problema", label: "O Problema" },
+                { href: "#solucao", label: "Solução" },
+                { href: "#comparativo", label: "Comparativo" },
+                { href: "#promo", label: "Promoção" },
+              ].map((item) => (
+                <motion.a
+                  key={item.href}
+                  href={item.href}
+                  className="text-sm font-medium text-gray-400 hover:text-white transition-colors relative"
+                  whileHover={{ y: -2 }}
+                >
+                  {item.label}
+                  <motion.span
+                    className="absolute -bottom-1 left-0 h-0.5 bg-gradient-to-r from-emerald-500 to-cyan-500"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: "100%" }}
+                  />
+                </motion.a>
+              ))}
+              <CyberButton href={WHATSAPP_URL}>
+                <Phone className="w-5 h-5" />
                 WhatsApp
-              </a>
+              </CyberButton>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+
+            <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white">
+              {menuOpen ? <motion.div whileTap={{ rotate: 90 }}><ChevronDown className="w-8 h-8" /></motion.div> : <Menu className="w-8 h-8" />}
+            </button>
+          </div>
+        </div>
+
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+        />
+      </motion.div>
+    </>
   );
 };
 
 const HeroSection = () => (
-  <section id="home" className="min-h-screen pt-24 pb-20 relative overflow-hidden bg-gradient-to-b from-black via-emerald-950/20 to-black">
-    <div className="absolute inset-0">
-      <FloatingIcon icon={Shield} color="#10b981" style={{ top: "10%", left: "5%" }} />
-      <FloatingIcon icon={Zap} color="#06b6d4" style={{ top: "20%", right: "10%" }} delay={1} />
-      <FloatingIcon icon={Clock} color="#8b5cf6" style={{ bottom: "30%", left: "15%" }} delay={2} />
-      <FloatingIcon icon={Phone} color="#f59e0b" style={{ bottom: "20%", right: "5%" }} delay={3} />
-    </div>
+  <section id="home" className="relative min-h-screen flex items-center pt-32 pb-20 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/30 to-black" />
 
     <div className="max-w-7xl mx-auto px-6 relative z-10">
-      <div className="grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
-        <motion.div initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }}>
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 mb-8">
-            <motion.div className="w-2 h-2 rounded-full bg-emerald-400" animate={{ scale: [1, 1.5, 1] }} transition={{ duration: 1.5, repeat: Infinity }} />
-            <span className="text-xs font-medium text-emerald-400 tracking-widest">SISTEMA ATIVO</span>
+      <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }}>
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 mb-8">
+            <PulseIndicator />
+            <span className="text-xs font-medium text-emerald-400 tracking-widest">SISTEMA DE PROTEÇÃO ATIVO</span>
           </div>
 
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black leading-none mb-6">
-            <span className="text-white">PROTEÇÃO</span>
-            <br />
-            <NeonText className="text-emerald-400">INTELIGENTE</NeonText>
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[0.9] mb-8">
+            <GlitchText className="text-white block">SEU VEÍCULO</GlitchText>
+            <GlitchText className="text-red-500 block">FOR ROUBADO?</GlitchText>
+            <span className="block bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+              A GENTE PAGA.
+            </span>
           </h1>
 
-          <p className="text-xl text-gray-400 mb-10 max-w-lg">
-            Se seu veículo for roubado, <span className="text-white font-bold">pagamos 100% da FIPE</span> em até 30 dias. Sem franquia, sem burocracia.
+          <p className="text-xl text-gray-400 mb-10 max-w-lg leading-relaxed">
+            A <span className="text-white font-bold">única empresa</span> que paga <span className="text-emerald-400 font-bold">100% da FIPE</span> em até <span className="text-cyan-400 font-bold">30 dias</span>. Sem franquia, sem burocracia.
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <motion.a
-              href={WHATSAPP_URL}
-              target="_blank"
-              className="group relative px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold rounded-full overflow-hidden"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="relative z-10 flex items-center gap-2">
-                Falar com Especialista
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </span>
-            </motion.a>
-            <motion.a
-              href="#sistema"
-              className="px-8 py-4 border border-white/20 text-white font-bold rounded-full hover:bg-white/5 transition-colors"
-              whileHover={{ scale: 1.05 }}
-            >
-              Ver Sistema
-            </motion.a>
+            <CyberButton href={WHATSAPP_URL}>
+              <Phone className="w-6 h-6" />
+              Falar com Especialista
+            </CyberButton>
+            <CyberButton href="#problema" variant="outline">
+              Entender o Problema
+            </CyberButton>
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, x: 50 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, duration: 1 }}>
-          <div className="relative">
-            <div className="absolute -inset-10 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 blur-3xl" />
-            <GlassCard className="p-8 relative">
-              <div className="absolute top-4 right-4 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span className="text-xs text-emerald-400">ONLINE</span>
-              </div>
-
-              <div className="text-center mb-8">
-                <Activity className="w-16 h-16 mx-auto mb-4 text-emerald-400" />
-                <h3 className="text-2xl font-bold text-white">VALE</h3>
-                <p className="text-gray-500 text-sm">Monitoramento Global</p>
-              </div>
-
-              <div className="space-y-4 mb-8">
+        <motion.div
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 1 }}
+          className="relative"
+        >
+          <NeonCard glowColor="#10b981" className="p-10">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <Activity className="w-8 h-8 text-emerald-400" />
                 <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Veículos Protegidos</span>
-                    <span className="text-emerald-400 font-bold">8.432</span>
-                  </div>
-                  <ProgressBar value={85} />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Alertas Ativos</span>
-                    <span className="text-amber-400 font-bold">127</span>
-                  </div>
-                  <ProgressBar value={30} color="#f59e0b" />
-                </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-400">Taxa de Recuperação</span>
-                    <span className="text-cyan-400 font-bold">98.5%</span>
-                  </div>
-                  <ProgressBar value={98} color="#06b6d4" />
+                  <h3 className="text-xl font-bold text-white">VALE MONITOR</h3>
+                  <p className="text-xs text-gray-500">Monitoramento Global em Tempo Real</p>
                 </div>
               </div>
-
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { icon: Truck, value: "8.4K", label: "Veículos" },
-                  { icon: Shield, value: "100%", label: "FIPE" },
-                  { icon: Clock, value: "30d", label: "Indenização" },
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center p-3 rounded-xl bg-white/5">
-                    <stat.icon className="w-6 h-6 mx-auto mb-1 text-emerald-400" />
-                    <div className="text-lg font-bold text-white">{stat.value}</div>
-                    <div className="text-xs text-gray-500">{stat.label}</div>
-                  </div>
-                ))}
+              <div className="flex items-center gap-2">
+                <PulseIndicator />
+                <span className="text-xs text-emerald-400 font-medium">LIVE</span>
               </div>
-            </GlassCard>
-          </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 mb-8">
+              {[
+                { icon: Shield, value: "8.432", label: "Veículos", color: "#10b981" },
+                { icon: AlertTriangle, value: "127", label: "Alertas", color: "#f59e0b" },
+                { icon: Fuel, value: "2.4", label: "km/L média", color: "#06b6d4" },
+                { icon: Gauge, value: "62", label: "km/h média", color: "#8b5cf6" },
+              ].map((stat) => (
+                <div key={stat.label} className="p-4 rounded-xl bg-white/5">
+                  <stat.icon className="w-6 h-6 mb-2" style={{ color: stat.color }} />
+                  <div className="text-2xl font-bold text-white">{stat.value}</div>
+                  <div className="text-xs text-gray-500">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <Shield className="w-8 h-8 text-emerald-400" />
+              <div>
+                <div className="font-bold text-white">Proteção Ativa</div>
+                <div className="text-sm text-emerald-400">Monitoramento 24h ativado</div>
+              </div>
+            </div>
+          </NeonCard>
+
+          <motion.div
+            className="absolute -bottom-6 -right-6 p-4 rounded-2xl bg-black/80 backdrop-blur-xl border border-amber-500/30"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 1 }}
+          >
+            <div className="flex items-center gap-3">
+              <Award className="w-6 h-6 text-amber-400" />
+              <div>
+                <div className="font-bold text-white">100% FIPE</div>
+                <div className="text-xs text-gray-500">Garantido</div>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
       </div>
-    </div>
-
-    <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
-      <ChevronDown className="w-8 h-8 text-gray-500" />
     </div>
   </section>
 );
 
-const AlertSection = () => (
-  <section id="sistema" className="py-32 relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-b from-black via-red-950/10 to-black" />
+const ProblemSection = () => (
+  <section id="problema" className="relative py-32 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-b from-black via-red-950/20 to-black" />
 
     <div className="max-w-7xl mx-auto px-6 relative z-10">
       <motion.div
-        className="text-center mb-16"
-        initial={{ opacity: 0, y: 30 }}
+        className="text-center mb-20"
+        initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 mb-6">
-          <AlertTriangle className="w-4 h-4 text-red-400" />
-          <span className="text-xs font-medium text-red-400 tracking-widest">DADOS OFICIAIS</span>
+        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 mb-8">
+          <AlertTriangle className="w-5 h-5 text-red-400" />
+          <span className="text-xs font-medium text-red-400 tracking-widest">DADOS OFICIAIS - SÃO LUÍS/MA</span>
         </div>
-        <h2 className="text-5xl md:text-6xl font-black text-white mb-4">
-          SÃO LUÍS:
-          <span className="text-red-400"> ALVO FÁCIL</span>
+
+        <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6">
+          <span className="text-white">SÃO LUÍS SE TORNOU</span>
+          <br />
+          <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+            ALVO FÁCIL
+          </span>
         </h2>
+
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          Os números assustam. Mais de <span className="text-red-400 font-bold">4 veículos</span> roubados por dia, e <span className="text-amber-400 font-bold">40% nunca são recuperados</span>.
+        </p>
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-8">
         {[
-          { icon: AlertTriangle, num: 4, label: "Veículos/dia", sub: "roubados em São Luís", color: "#ef4444" },
-          { icon: TrendingUp, num: 40, label: "%", sub: "nunca recuperados", color: "#f59e0b" },
-          { icon: MapPin, num: 1460, label: "+", sub: "casos por ano", color: "#06b6d4" },
+          { icon: AlertTriangle, value: 4, suffix: "/dia", label: "Veículos roubados", desc: "em São Luís por dia", color: "#ef4444" },
+          { icon: TrendingUp, value: 40, suffix: "%", label: "Nunca recuperados", desc: "dos casos", color: "#f59e0b" },
+          { icon: MapPin, value: 1460, suffix: "+", label: "Casos por ano", desc: "no Maranhão", color: "#06b6d4" },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.15 }}
           >
-            <GlassCard className="p-10 text-center group hover:border-red-500/30 transition-colors">
-              <div
-                className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center"
-                style={{ backgroundColor: `${stat.color}20`, border: `1px solid ${stat.color}40` }}
+            <NeonCard glowColor={stat.color} className="p-10 text-center group">
+              <motion.div
+                className="w-20 h-20 rounded-2xl mx-auto mb-6 flex items-center justify-center border-2"
+                style={{ borderColor: `${stat.color}50`, backgroundColor: `${stat.color}10` }}
+                whileHover={{ rotate: 5, scale: 1.1 }}
               >
                 <stat.icon className="w-10 h-10" style={{ color: stat.color }} />
+              </motion.div>
+
+              <div className="text-6xl md:text-7xl font-black mb-2" style={{ color: stat.color }}>
+                <AnimatedCounter target={stat.value} />
+                <span className="text-3xl">{stat.suffix}</span>
               </div>
-              <div className="text-6xl font-black mb-2" style={{ color: stat.color }}>
-                +{stat.num}{stat.label}
-              </div>
-              <p className="text-gray-400">{stat.sub}</p>
-            </GlassCard>
+
+              <p className="text-lg font-bold text-white mb-1">{stat.label}</p>
+              <p className="text-gray-500">{stat.desc}</p>
+            </NeonCard>
           </motion.div>
         ))}
       </div>
-    </div>
-  </section>
-);
 
-const BenefitsSection = () => (
-  <section id="cobertura" className="py-32 bg-black">
-    <div className="max-w-7xl mx-auto px-6">
       <motion.div
-        className="text-center mb-16"
+        className="mt-20 p-8 rounded-3xl bg-black/60 backdrop-blur-xl border border-red-500/20 text-center"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <span className="inline-block px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400 tracking-widest mb-6">
-          COBERTURA COMPLETA
+        <Shield className="w-12 h-12 text-red-400 mx-auto mb-4" />
+        <p className="text-xl text-white font-bold mb-2">
+          Sem proteção, o prejuízo é seu.
+        </p>
+        <p className="text-gray-400">
+          Com a TopyPro, você tem <span className="text-emerald-400 font-bold">segurança + rastreamento + indenização</span>.
+        </p>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const SolutionSection = () => (
+  <section id="solucao" className="relative py-32 bg-black">
+    <div className="max-w-7xl mx-auto px-6">
+      <motion.div
+        className="text-center mb-20"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-xs font-medium text-emerald-400 tracking-widest mb-6">
+          <Zap className="w-4 h-4" />
+          NOSSA SOLUÇÃO
         </span>
-        <h2 className="text-5xl md:text-6xl font-black text-white">
-          PROTEÇÃO <span className="text-emerald-400">TOTAL</span>
+
+        <h2 className="text-5xl md:text-6xl lg:text-7xl font-black mb-6">
+          <span className="text-white">MAIS QUE PROTEÇÃO:</span>
+          <br />
+          <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+            SERVIÇO COMPLETO
+          </span>
         </h2>
+
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto">
+          Um rastreador comum não te paga a FIPE. Com a gente, você tem <span className="text-white font-bold">rastreamento + reembolso integral</span>.
+        </p>
       </motion.div>
 
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[
-          { icon: Shield, title: "Roubo e Furto", desc: "Cobertura completa contra roubo e furto do veículo.", price: "100% FIPE" },
-          { icon: Clock, title: "30 Dias", desc: "Indenização em até 30 dias ou devolvemos.", price: "Garantido" },
-          { icon: Truck, title: "Guincho 24h", desc: "Assistência em todo território nacional.", price: "Grátis" },
-          { icon: Phone, title: "Suporte 24/7", desc: "Equipe pronta para ajudar a qualquer hora.", price: "Always" },
-          { icon: DollarSign, title: "Economia", desc: "Até 50% menos que seguro tradicional.", price: "R$ 99/mês" },
-          { icon: Check, title: "Sem Análise", desc: "Não exigimos nome limpo ou histórico.", price: "Imediato" },
+          { icon: Shield, title: "Proteção Total", desc: "Cobertura completa contra roubo e furto do seu veículo.", price: "100% FIPE", color: "#10b981" },
+          { icon: DollarSign, title: "Economia Inteligente", desc: "Pague até 50% menos que seguro convencional.", price: "R$ 99/mês", color: "#f59e0b" },
+          { icon: Clock, title: "Indenização em 30 dias", desc: "100% da FIPE em até 30 dias ou devolvemos.", price: "Garantido", color: "#06b6d4" },
+          { icon: Phone, title: "Suporte 24/7", desc: "Equipe de apoio 24 horas por dia, 7 dias por semana.", price: "Always", color: "#8b5cf6" },
+          { icon: Heart, title: "Atendimento Humano", desc: "Suporte especializado focado na sua conveniência.", price: "VIP", color: "#ec4899" },
+          { icon: Truck, title: "Assistência 24h", desc: "Guincho 24h para te socorrer a qualquer hora.", price: "Grátis", color: "#14b8a6" },
         ].map((item, i) => (
           <motion.div
             key={item.title}
@@ -334,101 +472,146 @@ const BenefitsSection = () => (
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: i * 0.1 }}
-            whileHover={{ y: -5 }}
           >
-            <GlassCard className="p-8 group hover:border-emerald-500/30 transition-all cursor-pointer">
+            <NeonCard glowColor={item.color} className="p-8 h-full group">
               <div className="flex items-start gap-5">
-                <div className="w-14 h-14 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                  <item.icon className="w-7 h-7 text-emerald-400" />
-                </div>
+                <motion.div
+                  className="w-14 h-14 rounded-xl flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: `${item.color}15`, border: `1px solid ${item.color}40` }}
+                  whileHover={{ rotate: 10, scale: 1.1 }}
+                >
+                  <item.icon className="w-7 h-7" style={{ color: item.color }} />
+                </motion.div>
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-2 group-hover:text-emerald-400 transition-colors">{item.title}</h3>
                   <p className="text-gray-500 text-sm mb-4">{item.desc}</p>
-                  <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-sm font-medium">
+                  <span className="inline-block px-3 py-1 rounded-full text-sm font-medium" style={{ backgroundColor: `${item.color}20`, color: item.color }}>
                     {item.price}
                   </span>
                 </div>
               </div>
-            </GlassCard>
+            </NeonCard>
           </motion.div>
         ))}
       </div>
+
+      <motion.div
+        className="mt-16 text-center"
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        <CyberButton href={WHATSAPP_URL}>
+          <Target className="w-5 h-5" />
+          Quero Fazer uma Cotação
+        </CyberButton>
+      </motion.div>
+
+      <motion.div
+        className="mt-20 grid md:grid-cols-3 gap-8"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        {[
+          { icon: Users, value: "2.500+", label: "Clientes Protegidos" },
+          { icon: StarIcon, value: "4.9", label: "Avaliação Média" },
+          { icon: Award, value: "98%", label: "Satisfação" },
+        ].map((stat) => (
+          <div key={stat.label} className="text-center p-8 rounded-3xl bg-white/5 border border-white/10">
+            <stat.icon className="w-10 h-10 text-amber-400 mx-auto mb-4" />
+            <div className="text-4xl font-black text-white mb-2">{stat.value}</div>
+            <div className="text-gray-500">{stat.label}</div>
+          </div>
+        ))}
+      </motion.div>
     </div>
   </section>
 );
 
 const ComparisonSection = () => (
-  <section className="py-32 relative overflow-hidden bg-gradient-to-b from-black to-violet-950/10">
+  <section id="comparativo" className="relative py-32 overflow-hidden bg-gradient-to-b from-black to-violet-950/20">
     <div className="max-w-7xl mx-auto px-6">
       <motion.div
-        className="text-center mb-16"
+        className="text-center mb-20"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+      >
+        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/30 bg-violet-500/10 text-xs font-medium text-violet-400 tracking-widest mb-6">
+          <Eye className="w-4 h-4" />
+          COMPARATIVO
+        </span>
+
+        <h2 className="text-5xl md:text-6xl lg:text-7xl font-black">
+          <span className="text-white">VEJA O QUE</span>
+          <br />
+          <span className="bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
+            REALMENTE VALE
+          </span>
+        </h2>
+      </motion.div>
+
+      <motion.div
+        className="rounded-3xl border border-white/10 bg-black/60 backdrop-blur-xl overflow-hidden"
+        initial={{ opacity: 0, y: 50, scale: 0.95 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true }}
+      >
+        <div className="grid grid-cols-3 gap-4 p-6 bg-gradient-to-r from-emerald-500/10 to-violet-500/10 border-b border-white/10">
+          <div className="text-sm font-semibold text-gray-400">CARACTERÍSTICA</div>
+          <div className="text-sm font-semibold text-gray-400 text-center">SEGURO TRADICIONAL</div>
+          <div className="text-sm font-bold text-emerald-400 text-center flex items-center justify-center gap-2">
+            <StarIcon className="w-4 h-4" fill="currentColor" /> TOPYPRO
+          </div>
+        </div>
+
+        {[
+          { feature: "Indenização por roubo/furto", traditional: "Parcial, com franquia", topypro: "100% da FIPE", highlight: true },
+          { feature: "Rastreamento em tempo real", traditional: "Cobrado à parte", topypro: "Grátis incluso", highlight: false },
+          { feature: "Consulta ao CPF / perfil", traditional: "Obrigatória", topypro: "Não exigimos", highlight: false },
+          { feature: "Tempo para indenização", traditional: "30 a 90 dias úteis", topypro: "Máximo 30 dias", highlight: true },
+          { feature: "Atendimento 24h", traditional: "Limitado / terceirizado", topypro: "Central própria", highlight: false },
+          { feature: "Mensalidade", traditional: "R$ 250 a R$ 500", topypro: "A partir de R$ 99", highlight: true },
+          { feature: "Burocracia na adesão", traditional: "Alta, com vistoria", topypro: "Ativação em minutos", highlight: false },
+        ].map((row, i) => (
+          <motion.div
+            key={i}
+            className={`grid grid-cols-3 gap-4 p-6 items-center border-b border-white/5 last:border-0 transition-colors ${
+              row.highlight ? "bg-emerald-500/5" : "hover:bg-white/5"
+            }`}
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.05 }}
+            whileHover={{ x: 5 }}
+          >
+            <div className="text-sm text-white font-medium">{row.feature}</div>
+            <div className="text-sm text-gray-500 text-center">{row.traditional}</div>
+            <div className="text-sm text-emerald-400 font-bold text-center flex items-center justify-center gap-2">
+              <Check className="w-4 h-4" />
+              {row.topypro}
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      <motion.div
+        className="flex flex-wrap justify-center gap-4 mt-12"
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
       >
-        <span className="inline-block px-4 py-2 rounded-full border border-violet-500/30 bg-violet-500/10 text-xs font-medium text-violet-400 tracking-widest mb-6">
-          COMPARATIVO
-        </span>
-        <h2 className="text-5xl md:text-6xl font-black text-white">
-          TOPYPRO <span className="text-violet-400">VS</span> TRADICIONAL
-        </h2>
+        {[
+          { icon: Zap, label: "Ativação Rápida" },
+          { icon: TrendingUp, label: "Melhor Custo-Benefício" },
+          { icon: Check, label: "Zero Burocracia" },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-medium">
+            <item.icon className="w-5 h-5" />
+            {item.label}
+          </div>
+        ))}
       </motion.div>
-
-      <div className="grid lg:grid-cols-2 gap-8">
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
-          <GlassCard className="p-8 h-full">
-            <h3 className="text-sm font-medium text-gray-500 tracking-widest mb-8">SEGURO TRADICIONAL</h3>
-            <div className="space-y-4">
-              {[
-                { label: "Indenização", value: "Parcial c/ franquia" },
-                { label: "Rastreamento", value: "Cobrado à parte" },
-                { label: "Análise CPF", value: "Obrigatória" },
-                { label: "Tempo reembolso", value: "30-90 dias" },
-                { label: "Mensalidade", value: "R$ 250-500" },
-                { label: "Ativação", value: "5+ dias" },
-              ].map((item) => (
-                <div key={item.label} className="flex justify-between py-3 border-b border-white/5">
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="text-gray-400">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-        >
-          <GlassCard className="p-8 h-full border-emerald-500/30 relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-500" />
-            <div className="absolute top-4 right-4">
-              <Star className="w-6 h-6 text-amber-400" fill="#f59e0b" />
-            </div>
-            <h3 className="text-sm font-medium text-emerald-400 tracking-widest mb-8">TOPYPRO</h3>
-            <div className="space-y-4">
-              {[
-                { label: "Indenização", value: "100% FIPE" },
-                { label: "Rastreamento", value: "Grátis incluso" },
-                { label: "Análise CPF", value: "Não exigimos" },
-                { label: "Tempo reembolso", value: "Máx 30 dias" },
-                { label: "Mensalidade", value: "R$ 99" },
-                { label: "Ativação", value: "Em minutos" },
-              ].map((item) => (
-                <div key={item.label} className="flex justify-between py-3 border-b border-white/5">
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="text-emerald-400 font-medium">{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </GlassCard>
-        </motion.div>
-      </div>
     </div>
   </section>
 );
@@ -453,56 +636,59 @@ const PromoSection = () => {
   const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
-    <section className="py-32 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black via-amber-950/10 to-black" />
+    <section id="promo" className="relative py-32 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-amber-950/20 to-black" />
 
-      <div className="max-w-4xl mx-auto px-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-6 relative z-10">
         <motion.div
+          className="text-center"
           initial={{ opacity: 0, scale: 0.9 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
         >
-          <GlassCard className="p-12 text-center relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-
+          <NeonCard glowColor="#f59e0b" className="p-12">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/30 mb-8">
               <Zap className="w-4 h-4 text-amber-400" />
-              <span className="text-xs font-medium text-amber-400 tracking-widest">PROMOÇÃO ESPECIAL</span>
+              <span className="text-xs font-medium text-amber-400 tracking-widest">PROMOÇÃO EXCLUSIVA DA SEMANA</span>
             </div>
 
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
-              PRIMEIRA MENSALIDADE
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6">
+              PRIMEIRA MENSALIDADE POR
             </h2>
-            <div className="text-7xl md:text-8xl font-black text-amber-400 mb-8">
-              R$ <span className="text-8xl md:text-9xl">1,00</span>
-            </div>
-            <p className="text-gray-400 mb-10">Válido para os primeiros 30 clientes da semana.</p>
 
-            <div className="flex justify-center gap-4 mb-10">
+            <div className="text-8xl md:text-9xl lg:text-[12rem] font-black bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent leading-none mb-8">
+              R$1,00
+            </div>
+
+            <p className="text-xl text-gray-400 mb-12 max-w-xl mx-auto">
+              Ative seu rastreador agora. Condição válida para os <span className="text-white font-bold">primeiros 30 clientes</span> da semana.
+            </p>
+
+            <div className="flex justify-center gap-4 mb-12">
               {[
                 { value: pad(time.hours), label: "Horas" },
                 { value: pad(time.minutes), label: "Min" },
                 { value: pad(time.seconds), label: "Seg" },
               ].map((unit) => (
-                <div key={unit.label} className="p-5 bg-black/50 border border-amber-500/30 rounded-xl min-w-[90px]">
-                  <div className="text-3xl font-black text-amber-400 font-mono">{unit.value}</div>
-                  <div className="text-xs text-gray-500 mt-1">{unit.label}</div>
+                <div key={unit.label} className="relative">
+                  <div className="absolute -inset-1 bg-amber-500/20 rounded-2xl blur" />
+                  <div className="relative p-6 bg-black/80 border border-amber-500/30 rounded-2xl min-w-[100px]">
+                    <div className="text-4xl font-black text-amber-400 font-mono">{unit.value}</div>
+                    <div className="text-xs text-gray-500 mt-1">{unit.label}</div>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <motion.a
-              href={WHATSAPP_URL}
-              target="_blank"
-              className="group inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-lg rounded-full"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
+            <CyberButton href={WHATSAPP_URL} variant="secondary">
               <Zap className="w-6 h-6" />
               Garantir Minha Vaga
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.a>
-          </GlassCard>
+            </CyberButton>
+
+            <p className="text-gray-500 text-sm mt-8">
+              Cada minuto sem proteção é um risco a mais.
+            </p>
+          </NeonCard>
         </motion.div>
       </div>
     </section>
@@ -510,20 +696,29 @@ const PromoSection = () => {
 };
 
 const Footer = () => (
-  <footer className="py-12 border-t border-white/10 bg-black">
+  <footer className="py-16 border-t border-white/10 bg-black">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="TopyPro" className="h-10 w-10" />
+      <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex items-center gap-4">
+          <img src={logo} alt="TopyPro" className="h-12 w-12" />
           <div>
-            <span className="text-lg font-bold">TOPY<span className="text-emerald-400">PRO</span></span>
+            <span className="text-xl font-black">
+              <span className="text-white">TOPY</span>
+              <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">PRO</span>
+            </span>
             <p className="text-xs text-gray-500">Proteção Veicular Inteligente</p>
           </div>
         </div>
-        <div className="flex items-center gap-2 text-gray-500 text-sm">
-          <Shield className="w-4 h-4 text-emerald-500" />
+
+        <div className="flex items-center gap-2 text-gray-500">
+          <Shield className="w-5 h-5 text-emerald-500" />
           <span>© {new Date().getFullYear()} TopyPro. Todos os direitos reservados.</span>
         </div>
+
+        <CyberButton href={WHATSAPP_URL}>
+          <Phone className="w-5 h-5" />
+          Fale Conosco
+        </CyberButton>
       </div>
     </div>
   </footer>
@@ -534,8 +729,8 @@ const WhatsAppButton = () => (
     href={WHATSAPP_URL}
     target="_blank"
     className="fixed bottom-8 right-8 z-50"
-    initial={{ scale: 0 }}
-    animate={{ scale: 1 }}
+    initial={{ scale: 0, opacity: 0 }}
+    animate={{ scale: 1, opacity: 1 }}
     whileHover={{ scale: 1.2 }}
     whileTap={{ scale: 0.9 }}
   >
@@ -559,8 +754,8 @@ const Site = () => (
   <div className="min-h-screen bg-black text-white">
     <Navbar />
     <HeroSection />
-    <AlertSection />
-    <BenefitsSection />
+    <ProblemSection />
+    <SolutionSection />
     <ComparisonSection />
     <PromoSection />
     <Footer />
